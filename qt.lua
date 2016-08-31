@@ -15,8 +15,7 @@ premake.extensions.qt = {
 	--
 	-- these are private, do not touch
 	--
-	enabled = false,
-	defaultpath = os.getenv("QTDIR") or os.getenv("QT_DIR")
+	enabled = false
 }
 
 --
@@ -50,7 +49,18 @@ end
 --
 function premake.extensions.qt.getPaths(cfg)
 	-- get the main path
-	local qtpath = cfg.qtpath or premake.extensions.qt.defaultpath
+	local qtpath = cfg.qtpath
+
+	if qtpath == nil then
+		local qtenv = ((os.getenv("QTDIR") and "QTDIR") or (os.getenv("QT_DIR") and "QT_DIR"))
+		if qtenv ~= nil then
+			if _OS == "windows" and not _ACTION:startswith("vs") then
+				qtpath = "%" .. qtenv .. "%"
+			else
+				qtpath = "$(" .. qtenv .. ")"
+			end
+		end
+  end
 
 	-- return the paths
 	return cfg.qtincludepath or (qtpath and qtpath .. "/include"),
